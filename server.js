@@ -15,15 +15,28 @@ const PORT = 3000;
 // Creates a new sqlite3 database
 const db = new sqlite3.Database('./database.db');
 
+// Sets the view engine and path to access views
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'html'));
+
 // Parses URL encoded requests https://www.geeksforgeeks.org/express-js-express-urlencoded-function/ 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('html'));
+app.use(express.static('public'));
 
 // Creates a user table in the database if one doesn't exist
 db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT,
     password TEXT
+)`);
+
+// Creates a table for a customers details if one doesn't exist
+db.run(`CREATE TABLE IF NOT EXISTS info (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    address TEXT,
+    age INTEGER,
+    col TEXT
 )`);
 
 // Routing for registration - registration form is now vulnerable to XSS attacks as a users input is inserted directly into the HTML response
@@ -72,18 +85,71 @@ app.post('/login', (req, res) => {
     });
 });
 
+// Routing to serve the login page
+app.get('/', (req, res) => {
+    res.render('index'); 
+});
 
 // Routing to serve the registration page
 app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, '/html/register.html'));
+    res.render('register'); 
 });
 
 // Routing to serve the welcome page
 app.get('/welcome', (req, res) => {
-    res.sendFile(path.join(__dirname, '/html/welcome.html'));
+    // Fetches every username from the database
+    db.all('SELECT username FROM users', (err, rows) => {
+        if (err) {
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        // Will display a list of all registered users without input santization - Stored XSS vulnerability
+        let userList = '';
+        rows.forEach(row => {
+            userList += row.username + '<br>';
+        });
+        res.send(`Welcome! New Users:<br>${userList}`);
+    });
+});
+
+// Routing to serve the details page
+app.get('/info', (req, res) => {
+    res.render('info'); 
+});
+
+// Route to display user information page
+app.get('/userInfo', (req, res) => {
+    // Fetch the latest user information from the database - unsecure and exposes application to sensitive data exposure
+    db.get(`SELECT * FROM info ORDER BY id DESC LIMIT 1`, (err, row) => {
+        if (err) {
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        if (!row) {
+            res.status(404).send('User information not found');
+            return;
+        }
+        // Render user information HTML page with data
+        res.render('userInfo', { user: row });
+    });
+});
+
+// Routing for saving user details - used to showcase sensitive data exposure
+app.post('/saveInfo', (req, res) => {
+    const { name, address, age, col} = req.body;
+    // Inserting users information into the database
+    db.run(`INSERT INTO info (name, address, age, col) VALUES ('${name}', '${address}', ${age}, '${col}')`, (err) => {
+        if (err) {
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        res.redirect('/userInfo');
+    });
 });
 
 // Logs that server is running
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+

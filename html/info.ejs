@@ -1,0 +1,27 @@
+<!--
+    Mark Cummins
+    x20400634
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+</head>
+<body>
+    <h2>Enter Your Information</h2>
+    <form action="/saveInfo" method="post">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+        <label for="address">Address:</label><br>
+        <input type="text" id="address" name="address" required><br><br>
+        <label for="age">Age:</label><br>
+        <input type="number" id="age" name="age" required><br><br>
+        <label for="col">Favourite Colour:</label><br>
+        <input type="text" id="col" name="col" required><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
