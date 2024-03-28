@@ -26,7 +26,7 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
     password TEXT
 )`);
 
-// Routing for registration
+// Routing for registration - registration form is now vulnerable to XSS attacks as a users input is inserted directly into the HTML response
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
     // Checks if a username already exists in the database
@@ -36,27 +36,29 @@ app.post('/register', (req, res) => {
             res.status(500).send('Internal Server Error');
             return;
         }
-        // If username already exists, inform the user
-        if (row) {
-            res.send('Username already exists. Please choose a different username.');
-            return;
-        }
+        // If username already exists, inform the user - commented out to demonstrate XSS attacks
+        // if (row) {
+        //     res.send('Username already exists. Please choose a different username.');
+        //     return;
+        // }
         // Otherwise, insert a new user into the database - query is parameterised to prevent sql injection attacks
         db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, password], (err) => {
             if (err) {
                 res.status(500).send('Internal Server Error');
                 return;
             }
-            res.send('Successfully Registered! You can now proceed to <a href="/">login</a>.');
+            // Directly inserting a users input into the HTML response to enable XSS attack - https://owasp.org/www-community/attacks/xss/ 
+            res.send('Successfully Registered! You can now proceed to <a href="/">login</a>. Welcome, ' + username);
         });
     });
 });
 
-// Routing for login
+
+// Routing for login - login form is now vulnerable to SQL injection as the users input is inserted directly into query
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    // Query is parameterised to separate the sql query from the user input, mitigating sql injection attacks
-    db.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, row) => {
+    // Now vulnerable to SQL injection as user input is inserted directly into the SQL query - https://www.w3schools.com/sql/sql_injection.asp 
+    db.get(`SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`, (err, row) => {
         if (err) {
             res.status(500).send('Internal Server Error');
             return;
@@ -69,6 +71,7 @@ app.post('/login', (req, res) => {
         }
     });
 });
+
 
 // Routing to serve the registration page
 app.get('/register', (req, res) => {
