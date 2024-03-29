@@ -1,0 +1,24 @@
+<!--
+    Mark Cummins
+    x20400634
+-->
+
+<!--Unsecure method of displaying user info - sensitive data exposure-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+</head>
+<body>
+    <!--Will display the information that the last user entered-->
+    <h2>User Information</h2>
+    <div id="userInfo">
+        <p><strong>Name:</strong> <%= user.name %></p>
+        <p><strong>Address:</strong> <%= user.address %></p>
+        <p><strong>Age:</strong> <%= user.age %></p>
+        <p><strong>Favourite Colour:</strong> <%= user.col %></p>
+    </div>
+</body>
+</html>
