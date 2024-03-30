@@ -69,6 +69,15 @@ app.post('/register', (req, res) => {
         return;
     }
 
+    // Regex to check if a password is at least 6 characters long and contains at least one lowercase and uppercase letter, and one number
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+
+    // Check if the password meets the strong password criteria
+    if (!strongPasswordRegex.test(password)) {
+        res.status(400).send('Password must be at least 6 characters long and contain at least one lowercase and uppercase letter, and one number.');
+        return;
+    }
+
     // Checks if a username already exists in the database
     db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
         // If an error is thrown, inform the user
@@ -92,6 +101,7 @@ app.post('/register', (req, res) => {
         });
     });
 });
+
 
 // Routing for login
 app.post('/login', (req, res) => {
