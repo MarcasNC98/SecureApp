@@ -13,9 +13,13 @@ const escapeHtml = require('escape-html');
 const sanitizeHtml = require('sanitize-html');
 // Using express-session to allow for session management during login https://expressjs.com/en/resources/middleware/session.html 
 const session = require('express-session');
+// Using helmet to implement security headers https://www.npmjs.com/package/helmet 
+const helmet = require('helmet');
 
 // Creates an express.js app
 const app = express();
+// Implements helmet for security headers
+app.use(helmet());
 // Sets the port to 3000
 const PORT = 3000;
 // Creates a new sqlite3 database
